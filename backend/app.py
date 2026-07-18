@@ -31,11 +31,21 @@ def home():
 def top_coins():
     try:
         coins = get_top_coins()
-        sentiment = get_market_sentiment(coins) if coins else {}
+        sentiment = {}
+        if coins:
+            try:
+                sentiment = get_market_sentiment(coins)
+            except Exception as se:
+                print(f"Sentiment error: {se}")
+                sentiment = {
+                    "overall_sentiment": "Neutral",
+                    "market_mood": "Neutral",
+                    "summary": "Market data loaded successfully.",
+                    "advice": "Always do your own research."
+                }
         return jsonify({"success": True, "coins": coins, "sentiment": sentiment})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 @app.route("/analyse/<coin_id>", methods=["GET"])
 def analyse(coin_id):
