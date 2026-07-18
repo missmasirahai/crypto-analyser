@@ -1,16 +1,21 @@
 import requests
 import urllib3
+import os
 from datetime import datetime
+from dotenv import load_dotenv
 
 urllib3.disable_warnings()
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
 COINGECKO_BASE = "https://api.coingecko.com/api/v3"
+COINGECKO_API_KEY = os.getenv("COINGECKO_API_KEY", "")
 
 session = requests.Session()
 session.verify = False
 session.headers.update({
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-    "accept": "application/json"
+    "accept": "application/json",
+    "x-cg-demo-api-key": COINGECKO_API_KEY
 })
 
 SUPPORTED_COINS = {
