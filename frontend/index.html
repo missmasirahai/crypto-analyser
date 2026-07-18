@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CryptoAI — AI Crypto Analyser</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">₿ CryptoAI</div>
+    <div class="tagline">AI-powered cryptocurrency market analyser</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- Market Overview -->
+  <section class="market-section" id="market-section">
+    <div class="section-header">
+      <h2>📊 Live Market Overview</h2>
+      <div class="sentiment-box hidden" id="sentiment-box"></div>
+    </div>
+    <div class="coins-grid" id="coins-grid">
+      <div class="loading-text">Loading live market data...</div>
+    </div>
+  </section>
+
+  <!-- Analysis Section -->
+  <section class="analysis-section hidden" id="analysis-section">
+    <div class="analysis-header">
+      <button class="back-btn" onclick="goBack()">← Back to Market</button>
+      <h2 id="analysis-title">Bitcoin Analysis</h2>
+    </div>
+
+    <!-- Signal Banner -->
+    <div class="signal-banner" id="signal-banner">
+      <div class="signal-left">
+        <div class="signal-icon" id="signal-icon">📈</div>
+        <div>
+          <div class="signal-label">AI Signal</div>
+          <div class="signal-text" id="signal-text">Bullish</div>
+          <div class="signal-conf" id="signal-conf">High Confidence</div>
+        </div>
+      </div>
+      <div class="signal-strength">
+        <div class="strength-num" id="strength-num">75</div>
+        <div class="strength-label">Signal Strength</div>
+      </div>
+    </div>
+
+    <!-- Price Stats -->
+    <div class="stats-grid" id="stats-grid"></div>
+
+    <!-- Chart -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3>📈 Price Chart (30 Days)</h3>
+        <div class="chart-btns">
+          <button class="chart-btn active" onclick="switchChart(7, this)">7D</button>
+          <button class="chart-btn" onclick="switchChart(30, this)">30D</button>
+        </div>
+      </div>
+      <canvas id="priceChart"></canvas>
+    </div>
+
+    <!-- Indicators -->
+    <div class="indicators-grid" id="indicators-grid"></div>
+
+    <!-- AI Analysis Cards -->
+    <div class="result-card">
+      <h3>📋 Market Summary</h3>
+      <p id="ai-summary"></p>
+    </div>
+
+    <div class="result-card">
+      <h3>📊 Price Analysis</h3>
+      <p id="ai-price"></p>
+    </div>
+
+    <div class="result-card">
+      <h3>📉 RSI Analysis</h3>
+      <p id="ai-rsi"></p>
+    </div>
+
+    <div class="result-card">
+      <h3>🔮 Short Term Outlook</h3>
+      <p id="ai-outlook"></p>
+    </div>
+
+    <div class="two-col">
+      <div class="result-card">
+        <h3>🎯 Key Levels</h3>
+        <div id="key-levels"></div>
+      </div>
+      <div class="result-card">
+        <h3>⚠️ Risk Factors</h3>
+        <ul id="risk-factors"></ul>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <h3>💡 Opportunities</h3>
+      <ul id="opportunities"></ul>
+    </div>
+
+    <div class="disclaimer-box" id="disclaimer-box"></div>
+
+  </section>
+
+  <!-- Loading -->
+  <div class="loading hidden" id="loading">
+    <div class="spinner"></div>
+    <p>AI is analysing market data...</p>
+    <p class="loading-sub">Fetching live prices and calculating indicators</p>
+  </div>
+
+</main>
+
+<script>
+  var API = "http://localhost:5000";
+  var currentCoinId = "";
+  var priceChart = null;
+  var fullHistory = [];
+
+  window.onload = function() { loadMarket(); };
+
+  function loadMarket() {
+    document.getElementById("coins-grid").innerHTML = "<div class='loading-text'>Loading live market data...</div>";
+    fetch(API + "/top-coins")
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.success) {
+          renderCoins(data.coins);
+          if (data.sentiment) renderSentiment(data.sentiment);
+        }
+      })
+      .catch(function() {
+        document.getElementById("coins-grid").innerHTML = "<p style='color:#888'>Could not load market data. Make sure Flask is running.</p>";
+      });
+  }
+
+  function renderSentiment(s) {
+    var box = document.getElementById("sentiment-box");
+    var cls = s.overall_sentiment === "Bullish" ? "sent-bull" :
+              s.overall_sentiment === "Bearish" ? "sent-bear" : "sent-neutral";
+    box.className = "sentiment-box " + cls;
+    box.innerHTML = "<strong>" + s.overall_sentiment + " Market</strong> — " + s.market_mood + "<br><small>" + s.summary + "</small>";
+    box.classList.remove("hidden");
+  }
+
+  function renderCoins(coins) {
+    var grid = document.getElementById("coins-grid");
+    grid.innerHTML = "";
+    coins.forEach(function(c) {
+      var up = c.change_24h >= 0;
+      var card = document.createElement("div");
+      card.className = "coin-card";
+      card.onclick = function() { analyseCoin(c.id, c.name); };
+      card.innerHTML =
+        "<div class='coin-top'>" +
+          "<img src='" + c.image + "' alt='" + c.name + "' class='coin-img'/>" +
+          "<div><div class='coin-name'>" + c.name + "</div>" +
+          "<div class='coin-symbol'>" + c.symbol + "</div></div>" +
+        "</div>" +
+        "<div class='coin-price'>$" + formatPrice(c.price) + "</div>" +
+        "<div class='coin-change " + (up ? "change-up" : "change-down") + "'>" +
+          (up ? "▲" : "▼") + " " + Math.abs(c.change_24h) + "%" +
+        "</div>" +
+        "<div class='coin-mcap'>MCap: $" + formatBig(c.market_cap) + "</div>" +
+        "<button class='analyse-coin-btn'>🤖 AI Analyse</button>";
+      grid.appendChild(card);
+    });
+  }
+
+  function analyseCoin(coinId, coinName) {
+    currentCoinId = coinId;
+    document.getElementById("market-section").classList.add("hidden");
+    document.getElementById("analysis-section").classList.add("hidden");
+    document.getElementById("loading").classList.remove("hidden");
+    document.getElementById("analysis-title").textContent = coinName + " Analysis";
+
+    fetch(API + "/analyse/" + coinId)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        document.getElementById("loading").classList.add("hidden");
+        if (data.success) {
+          displayAnalysis(data);
+          document.getElementById("analysis-section").classList.remove("hidden");
+          window.scrollTo(0, 0);
+        } else {
+          alert("Error: " + data.error);
+          goBack();
+        }
+      })
+      .catch(function() {
+        document.getElementById("loading").classList.add("hidden");
+        alert("Could not connect to server!");
+        goBack();
+      });
+  }
+
+  function displayAnalysis(data) {
+    var a = data.analysis;
+    var p = data.price_data;
+    var ind = data.indicators;
+    fullHistory = data.history;
+
+    // Signal banner
+    var banner = document.getElementById("signal-banner");
+    banner.className = "signal-banner";
+    if (a.signal === "Bullish") { banner.classList.add("sig-bull"); document.getElementById("signal-icon").textContent = "📈"; }
+    else if (a.signal === "Bearish") { banner.classList.add("sig-bear"); document.getElementById("signal-icon").textContent = "📉"; }
+    else { banner.classList.add("sig-neutral"); document.getElementById("signal-icon").textContent = "➡️"; }
+
+    document.getElementById("signal-text").textContent = a.signal || "Neutral";
+    document.getElementById("signal-conf").textContent = (a.confidence || "Medium") + " Confidence";
+    document.getElementById("strength-num").textContent = a.signal_strength || 50;
+
+    // Stats
+    var stats = document.getElementById("stats-grid");
+    stats.innerHTML =
+      statBox("Current Price", "$" + formatPrice(p.price)) +
+      statBox("24h Change", (p.change_24h >= 0 ? "+" : "") + p.change_24h + "%", p.change_24h >= 0 ? "up" : "down") +
+      statBox("24h Volume", "$" + formatBig(p.volume_24h)) +
+      statBox("Market Cap", "$" + formatBig(p.market_cap));
+
+    // Chart
+    drawChart(fullHistory.slice(-30));
+
+    // Indicators
+    var indGrid = document.getElementById("indicators-grid");
+    indGrid.innerHTML =
+      indBox("MA7", "$" + (ind.ma7 || "N/A")) +
+      indBox("MA14", "$" + (ind.ma14 || "N/A")) +
+      indBox("MA30", "$" + (ind.ma30 || "N/A")) +
+      indBox("RSI", ind.rsi || "N/A", getRsiClass(ind.rsi)) +
+      indBox("7D Change", (ind.change_7d || 0) + "%", ind.change_7d >= 0 ? "up" : "down") +
+      indBox("30D Change", (ind.change_30d || 0) + "%", ind.change_30d >= 0 ? "up" : "down") +
+      indBox("Trend", ind.trend || "N/A") +
+      indBox("30D High", "$" + (ind.highest_30d || "N/A")) +
+      indBox("30D Low", "$" + (ind.lowest_30d || "N/A"));
+
+    // AI text
+    document.getElementById("ai-summary").textContent = a.summary || "";
+    document.getElementById("ai-price").textContent = a.price_analysis || "";
+    document.getElementById("ai-rsi").textContent = a.rsi_analysis || "";
+    document.getElementById("ai-outlook").textContent = a.short_term_outlook || "";
+
+    // Key levels
+    var kl = a.key_levels || {};
+    document.getElementById("key-levels").innerHTML =
+      "<div class='level-item'><span>Support</span><strong>" + (kl.support || "N/A") + "</strong></div>" +
+      "<div class='level-item'><span>Resistance</span><strong>" + (kl.resistance || "N/A") + "</strong></div>";
+
+    // Lists
+    renderList("risk-factors", a.risk_factors || []);
+    renderList("opportunities", a.opportunities || []);
+
+    document.getElementById("disclaimer-box").textContent = a.disclaimer || "";
+  }
+
+  function drawChart(history) {
+    var labels = history.map(function(h) { return h.date; });
+    var prices = history.map(function(h) { return h.price; });
+    var ctx = document.getElementById("priceChart").getContext("2d");
+    if (priceChart) priceChart.destroy();
+    priceChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Price (USD)",
+          data: prices,
+          borderColor: "#F7931A",
+          backgroundColor: "rgba(247,147,26,0.1)",
+          borderWidth: 2,
+          pointRadius: 3,
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: "#fff" } } },
+        scales: {
+          x: { ticks: { color: "#aaa", maxTicksLimit: 8 }, grid: { color: "#333" } },
+          y: { ticks: { color: "#aaa", callback: function(v) { return "$" + formatPrice(v); } }, grid: { color: "#333" } }
+        }
+      }
+    });
+  }
+
+  function switchChart(days, btn) {
+    document.querySelectorAll(".chart-btn").forEach(function(b) { b.classList.remove("active"); });
+    btn.classList.add("active");
+    drawChart(fullHistory.slice(-days));
+  }
+
+  function goBack() {
+    document.getElementById("analysis-section").classList.add("hidden");
+    document.getElementById("market-section").classList.remove("hidden");
+    if (priceChart) { priceChart.destroy(); priceChart = null; }
+  }
+
+  function renderList(id, items) {
+    var el = document.getElementById(id);
+    el.innerHTML = "";
+    items.forEach(function(item) {
+      var li = document.createElement("li");
+      li.textContent = item;
+      el.appendChild(li);
+    });
+  }
+
+  function statBox(label, value, cls) {
+    return "<div class='stat-box'><div class='stat-label'>" + label + "</div>" +
+      "<div class='stat-value " + (cls || "") + "'>" + value + "</div></div>";
+  }
+
+  function indBox(label, value, cls) {
+    return "<div class='ind-box'><div class='ind-label'>" + label + "</div>" +
+      "<div class='ind-value " + (cls || "") + "'>" + value + "</div></div>";
+  }
+
+  function getRsiClass(rsi) {
+    if (!rsi) return "";
+    if (rsi > 70) return "rsi-high";
+    if (rsi < 30) return "rsi-low";
+    return "";
+  }
+
+  function formatPrice(p) {
+    if (!p) return "0";
+    if (p >= 1000) return p.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (p >= 1) return p.toFixed(4);
+    return p.toFixed(6);
+  }
+
+  function formatBig(n) {
+    if (!n) return "0";
+    if (n >= 1e12) return (n / 1e12).toFixed(2) + "T";
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + "B";
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + "M";
+    return n.toLocaleString();
+  }
+</script>
+
+</body>
+</html>
