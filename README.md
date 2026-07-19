@@ -1,313 +1,152 @@
-# 🚀 CryptoMind AI – LLM-Powered Cryptocurrency Intelligence
+# ₿ CryptoAI — AI Cryptocurrency Market Analyser
 
-> **CryptoMind AI** is an intelligent cryptocurrency analysis platform that leverages Large Language Models (LLMs) to transform real-time blockchain and market data into actionable insights. Built for traders, investors, researchers, and developers, it provides AI-generated explanations, technical analysis, sentiment evaluation, and market intelligence through a conversational interface.
+An AI-powered cryptocurrency analysis dashboard that fetches live market data, calculates technical indicators, and provides Gemini AI-generated market commentary with Bull/Bear signals.
 
----
-
-## ✨ Overview
-
-CryptoMind AI combines financial market APIs with advanced LLM reasoning to simplify cryptocurrency research. Instead of manually analyzing charts, indicators, and news, users can ask natural language questions and receive comprehensive AI-generated responses.
+## 🌐 Live Demo
+👉 [crypto-analyser-nine.vercel.app](https://crypto-analyser-nine.vercel.app)
 
 ---
 
-## 🌟 Key Features
+## ✨ Features
 
-- 🧠 AI-powered crypto research assistant
-- 📈 Live cryptocurrency price tracking
-- 📊 Technical indicator analysis
-- 📰 AI news summarization
-- 😊 Social media sentiment analysis
-- 🔍 Multi-coin comparison
-- 💹 Market trend explanations
-- ⚠️ Risk and volatility assessment
-- 💬 Conversational chatbot interface
-- 📱 Fully responsive dashboard
+- **📊 Live Market Overview** — Real-time prices for top 10 cryptocurrencies
+- **🤖 AI Market Sentiment** — Gemini AI analyses overall market mood
+- **📈 AI Signal** — Bullish / Bearish / Neutral with confidence level
+- **💪 Signal Strength** — Score out of 100
+- **📉 Interactive Price Chart** — 7D and 30D toggle with Chart.js
+- **📊 Technical Indicators** — MA7, MA14, MA30, RSI, trend direction
+- **🎯 Key Levels** — AI-identified support and resistance levels
+- **⚠️ Risk Factors** — What could go wrong
+- **💡 Opportunities** — What to watch for
+- **🔮 Short Term Outlook** — Next 7 days prediction
+- **Real Coin Logos** — Live images from CoinGecko
 
 ---
 
-## 🏗️ System Architecture
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| Python | Core programming language |
+| Flask | Backend web server |
+| Flask-CORS | Cross-origin request handling |
+| Google Gemini API | AI market analysis and sentiment |
+| CoinGecko API | Live cryptocurrency market data |
+| Chart.js | Interactive price charts |
+| HTML/CSS/JavaScript | Dark professional frontend |
+| Render | Backend deployment |
+| Vercel | Frontend deployment |
+
+---
+
+## 📁 Project Structure
 
 ```
-                User
-                  │
-                  ▼
-         React / Next.js Frontend
-                  │
-                  ▼
-        FastAPI / Flask Backend
-                  │
-      ┌───────────┼────────────┐
-      ▼           ▼            ▼
- CoinGecko     News API    Binance API
-      │           │            │
-      └───────────┼────────────┘
-                  ▼
-          Data Processing Layer
-                  ▼
-        LangChain / LLM Pipeline
-                  ▼
-       OpenAI GPT / Local LLM
-                  ▼
-          AI Generated Insights
-```
-
----
-
-# 🛠️ Technology Stack
-
-### Frontend
-
-- React.js
-- Next.js
-- Tailwind CSS
-- TypeScript
-- Recharts
-
-### Backend
-
-- Python
-- FastAPI
-- REST API
-
-### AI
-
-- OpenAI GPT
-- LangChain
-- Hugging Face
-- Prompt Engineering
-
-### Database
-
-- PostgreSQL
-- Redis (Caching)
-
-### External APIs
-
-- CoinGecko
-- Binance
-- CryptoCompare
-- NewsAPI
-
----
-
-# 📁 Directory Structure
-
-```
-cryptomind-ai/
-
-├── frontend/
-│   ├── app/
-│   ├── components/
-│   ├── hooks/
-│   ├── pages/
-│   └── utils/
-│
+crypto-analyser/
 ├── backend/
-│   ├── api/
-│   ├── services/
-│   ├── llm/
-│   ├── prompts/
-│   ├── models/
-│   └── main.py
-│
-├── database/
-│
-├── assets/
-│
-├── screenshots/
-│
-├── requirements.txt
-├── package.json
-├── docker-compose.yml
-├── .env.example
-└── README.md
+│   ├── app.py          # Flask server with API routes
+│   ├── crypto.py       # CoinGecko API integration + indicators
+│   ├── analyst.py      # Gemini AI market analysis
+│   └── .env            # Secret API keys (not on GitHub)
+├── frontend/
+│   ├── index.html      # Main dashboard interface
+│   └── style.css       # Dark crypto-themed design
+├── requirements.txt    # Python dependencies
+├── .gitignore          # Excludes .env and cache
+└── README.md           # Project documentation
 ```
 
 ---
 
-# ⚡ Installation
+## 🚀 How to Run Locally
 
-Clone the repository
-
+### Step 1 — Clone the repository
 ```bash
-git clone https://github.com/username/cryptomind-ai.git
-
-cd cryptomind-ai
+git clone https://github.com/missmasirahai/crypto-analyser.git
+cd crypto-analyser
 ```
 
-Install backend dependencies
-
+### Step 2 — Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-Install frontend dependencies
+### Step 3 — Add your API keys
+Create a `.env` file inside the `backend` folder:
+```
+GEMINI_API_KEY=your-gemini-api-key-here
+COINGECKO_API_KEY=your-coingecko-api-key-here
+```
 
+Get free keys at:
+- Gemini: https://aistudio.google.com/apikey
+- CoinGecko: https://www.coingecko.com/en/api
+
+### Step 4 — Run the Flask server
 ```bash
-npm install
+cd backend
+python app.py
 ```
 
-Run backend
-
-```bash
-uvicorn backend.main:app --reload
-```
-
-Run frontend
-
-```bash
-npm run dev
-```
+### Step 5 — Open the frontend
+Open `frontend/index.html` in your browser.
 
 ---
 
-# 🔐 Environment Variables
+## 🔌 API Endpoints
 
-```env
-OPENAI_API_KEY=
-
-COINGECKO_API_KEY=
-
-BINANCE_API_KEY=
-
-NEWS_API_KEY=
-
-DATABASE_URL=
-
-REDIS_URL=
-```
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/` | Health check |
+| GET | `/top-coins` | Get top 10 coins with market sentiment |
+| GET | `/analyse/<coin_id>` | Full AI analysis for a specific coin |
+| GET | `/price-history/<coin_id>` | Price history for charting |
 
 ---
 
-# 💬 Example Queries
+## 📊 Technical Indicators Explained
 
-```
-Analyze Bitcoin's price movement today.
-
-Compare Ethereum and Solana.
-
-Summarize today's crypto news.
-
-Should I be worried about Bitcoin volatility?
-
-Explain RSI for Ethereum.
-
-Which cryptocurrencies are trending today?
-
-What caused Dogecoin to increase today?
-
-Predict possible market sentiment for XRP.
-```
+| Indicator | What it means |
+|---|---|
+| MA7 | Average price of last 7 days |
+| MA14 | Average price of last 14 days |
+| MA30 | Average price of last 30 days |
+| RSI > 70 | Overbought — price may drop |
+| RSI < 30 | Oversold — price may rise |
+| RSI 30-70 | Neutral zone |
+| MA7 > MA14 | Uptrend signal |
+| MA7 < MA14 | Downtrend signal |
 
 ---
 
-# 🧠 AI Workflow
+## ⚠️ Disclaimer
 
-```
-User Query
-      │
-      ▼
-Prompt Optimization
-      │
-      ▼
-Fetch Live Market Data
-      │
-      ▼
-Retrieve Latest News
-      │
-      ▼
-Generate Context
-      │
-      ▼
-LLM Analysis
-      │
-      ▼
-AI Response
-      │
-      ▼
-Interactive Dashboard
-```
+This app is for educational purposes only. Nothing here is financial advice. Always do your own research before making any investment decisions.
 
 ---
 
-# 📊 Supported Analysis
+## 🌍 Deployment
 
-- Market Overview
-- Price Trend Analysis
-- Technical Indicators
-- Moving Average Analysis
-- RSI Analysis
-- MACD Interpretation
-- Market Sentiment
-- Volume Analysis
-- Fear & Greed Insights
-- News Impact Analysis
-- Coin Comparison
-- Investment Risk Summary
+- **Backend:** Render free tier — `https://crypto-analyser-dwjd.onrender.com`
+- **Frontend:** Vercel free tier — `https://crypto-analyser-nine.vercel.app`
 
 ---
 
-# 📈 Future Roadmap
+## 👩‍💻 Author
 
-- AI Portfolio Manager
-- Personalized Trading Signals
-- Voice Assistant
-- Multi-language Support
-- On-chain Analytics
-- Wallet Integration
-- Price Prediction Models
-- Telegram Bot
-- Discord Bot
-- AI Investment Advisor
+**Masirah Saudagar**
+- GitHub: [@missmasirahai](https://github.com/missmasirahai)
+- LinkedIn: [masirah-saudagar](https://linkedin.com/in/masirah-saudagar-2980a93a1)
+- B.Sc. Information Technology — University of Mumbai (CDOE)
 
 ---
 
-# 📷 Screenshots
+## 📌 Part of LLM Project Hub
 
-```
-screenshots/
-
-├── dashboard.png
-├── analysis.png
-├── comparison.png
-├── chatbot.png
-└── sentiment.png
-```
-
----
-
-# 🤝 Contributing
-
-Contributions are welcome!
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to GitHub
-5. Open a Pull Request
-
----
-
-# 📄 License
-
-Licensed under the MIT License.
-
----
-
-# 👨‍💻 Author
-
-**Your Name**
-
-GitHub: https://github.com/yourusername
-
-LinkedIn: https://linkedin.com/in/yourusername
-
----
-
-## ⭐ Why This Project?
-
-CryptoMind AI demonstrates how Large Language Models can be integrated with financial APIs to create intelligent, explainable, and user-friendly cryptocurrency analysis tools. It showcases full-stack development, AI orchestration, API integration, prompt engineering, and modern web technologies, making it an excellent portfolio project for AI, LLM, and software engineering roles.
-
----
-
-⭐ **If you like this project, consider giving it a star on GitHub!**
+1. ✅ Movie Recommendation System
+2. ✅ Podcast Summarization App
+3. ✅ Contract & Legal Document Analyser
+4. ✅ EDA using LLMs
+5. ✅ Fake News Detection
+6. ✅ Cryptocurrency Analysis ← This project
+7. Stock Market Trend Prediction
